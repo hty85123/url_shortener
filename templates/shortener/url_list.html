@@ -12,11 +12,11 @@
 <ul>
     {% for url in urls %}
     <li>
-        {{ url.original_url }} -> <a href="/{{ url.short_url }}/">https://short.bfirst.com.tw/{{ url.short_url }}</a>
-        <p>Clicks: {{ url.clicks.count }}</p>
+        {{ url.original_url }} -> <a href="/{{ url.short_url }}/">{{ BASE_URL }}/{{ url.short_url }}</a>
+        <p>Clicks: {{ url.clicks_count }}</p>
         <ul>
-            {% for click in url.clicks.all %}
-            <li>{{ click.timestamp }} - {{ click.ip_address }}</li>
+            {% for click in url.clicks %}
+            <li>{{ click.timestamp|date:"Y-m-d H:i:s" }} - {{ click.ip_address }}</li>
             {% endfor %}
         </ul>
     </li>

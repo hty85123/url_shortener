@@ -13,3 +13,4 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT', '3306'),
     }
 }
+BASE_URL = os.getenv('BASE_URL', "https://short.bfirst.com.tw"),

@@ -1,0 +1,32 @@
+<h1>Your Shortened URLs</h1>
+{% if messages %}
+    <div>
+        {% for message in messages %}
+            <div class="alert {{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+<a href="/accounts/logout/">Logout</a> | <a href="/list/create/">Create New URL</a>
+<ul>
+    {% for url in urls %}
+    <li>
+        {{ url.original_url }} -> <a href="/{{ url.short_url }}/">https://short.bfirst.com.tw/{{ url.short_url }}</a>
+        <p>Clicks: {{ url.clicks.count }}</p>
+        <ul>
+            {% for click in url.clicks.all %}
+            <li>{{ click.timestamp }} - {{ click.ip_address }}</li>
+            {% endfor %}
+        </ul>
+    </li>
+    {% endfor %}
+</ul>
+<script>
+    // Return to short URL list with previous page button
+    window.addEventListener("pageshow", function (event) {
+        if (event.persisted) {
+            location.reload();
+        }
+    });
+</script>

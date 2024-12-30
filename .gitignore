@@ -1,0 +1,35 @@
+# Python Related
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pdb
+
+# ENV Related
+.env
+
+# IDE Related
+.vscode/
+.idea/
+
+# Log Related
+*.log
+
+# Staticfiles Related
+static/
+staticfiles/
+
+# Media Related
+media/
+
+# Local DB Related
+db.sqlite3
+
+# gcloud related
+.gcloudignore
+
+# Mac System Related
+.DS_Store
+
+# GAE Related
+app.yaml

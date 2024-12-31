@@ -18,13 +18,16 @@ from django.contrib import admin
 from django.urls import path, include
 from django.shortcuts import redirect
 from accounts.views import custom_connections_view, auto_logout
-
+from shortener.views import data_deletion_policy, privacy_policy
 
 urlpatterns = [
+    path('data_deletion_policy/', data_deletion_policy, name='data_deletion'),
+    path('privacy_policy/', privacy_policy, name='privacy'),
     path('admin/', admin.site.urls),
     path('accounts/3rdparty/', custom_connections_view, name='account_connections'),
     path('accounts/logout/', auto_logout, name='account_logout'),
     path('accounts/', include('allauth.urls')),  # Login Router
     path('', include('shortener.urls')),   # Shortener App
     path('', lambda request: redirect('url_list')),
+    
 ]

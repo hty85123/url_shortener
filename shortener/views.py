@@ -141,3 +141,10 @@ def get_client_ip(request):
     else:
         ip = request.META.get('REMOTE_ADDR')
     return ip
+
+
+def data_deletion_policy(request):
+    return render(request, 'shortener/data_deletion_policy.html')
+
+def privacy_policy(request):
+    return render(request, 'shortener/privacy_policy.html')

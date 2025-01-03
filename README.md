@@ -56,7 +56,7 @@ python manage.py migrate
 python manage.py runserver
 ```
 
-## Future-Proof API
+## Frontend-Backend Separation API
 1. Login with your Google Account
 You can see something like this on you terminal:
 ```

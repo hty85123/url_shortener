@@ -10,43 +10,92 @@ from datetime import datetime
 
 URLData = namedtuple('URLData', ['original_url', 'short_url', 'clicks_count', 'clicks'])
 
+# # With N+1 Problem
+# # Retrieve short URLs created by the user
+# @login_required
+# def url_list(request):
+#     with connection.cursor() as cursor:
+#         # Retrieve urls related to the user
+#         cursor.execute("""
+#             SELECT id, original_url, short_url
+#             FROM shortener_shortenedurl
+#             WHERE user_id = %s
+#         """, [request.user.id])
+#         urls = cursor.fetchall()
+
+#     url_data = []
+#     for url in urls:
+#         url_id, original_url, short_url = url
+
+#         with connection.cursor() as cursor:
+#             # Count of Clicks
+#             cursor.execute("""
+#                 SELECT COUNT(*) FROM shortener_clickrecord
+#                 WHERE short_url_id = %s
+#             """, [url_id])
+#             clicks_count = cursor.fetchone()[0]
+
+#             # Click Records
+#             cursor.execute("""
+#                 SELECT timestamp, ip_address
+#                 FROM shortener_clickrecord
+#                 WHERE short_url_id = %s
+#                 ORDER BY timestamp DESC
+#             """, [url_id])
+#             clicks = cursor.fetchall()
+#         url_data.append(URLData(
+#             original_url=original_url,
+#             short_url=short_url,
+#             clicks_count=clicks_count,
+#             clicks=[{'timestamp': c[0], 'ip_address': c[1]} for c in clicks],
+#         ))
+#     return render(request, 'shortener/url_list.html', {'urls': url_data})
+
 # Retrieve short URLs created by the user
 @login_required
 def url_list(request):
     with connection.cursor() as cursor:
-        # Retrieve urls related to the user
+        # Retrieve short url and click records
         cursor.execute("""
-            SELECT id, original_url, short_url
-            FROM shortener_shortenedurl
-            WHERE user_id = %s
+            SELECT 
+                su.id AS url_id, 
+                su.original_url, 
+                su.short_url, 
+                COUNT(cr.id) AS clicks_count
+            FROM shortener_shortenedurl su
+            LEFT JOIN shortener_clickrecord cr ON su.id = cr.short_url_id
+            WHERE su.user_id = %s
+            GROUP BY su.id, su.original_url, su.short_url
         """, [request.user.id])
         urls = cursor.fetchall()
+    # Retreive click records 
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT 
+                cr.short_url_id, 
+                cr.timestamp, 
+                cr.ip_address
+            FROM shortener_clickrecord cr
+            INNER JOIN shortener_shortenedurl su ON cr.short_url_id = su.id
+            WHERE su.user_id = %s
+            ORDER BY cr.short_url_id, cr.timestamp DESC
+        """, [request.user.id])
+        all_clicks = cursor.fetchall()
+    # Store retreived click records using Dict
+    clicks_dict = {}
+    for short_url_id, timestamp, ip_address in all_clicks:
+        if short_url_id not in clicks_dict:
+            clicks_dict[short_url_id] = []
+        clicks_dict[short_url_id].append({'timestamp': timestamp, 'ip_address': ip_address})
 
+    # output data
     url_data = []
-    for url in urls:
-        url_id, original_url, short_url = url
-
-        with connection.cursor() as cursor:
-            # Count of Clicks
-            cursor.execute("""
-                SELECT COUNT(*) FROM shortener_clickrecord
-                WHERE short_url_id = %s
-            """, [url_id])
-            clicks_count = cursor.fetchone()[0]
-
-            # Click Records
-            cursor.execute("""
-                SELECT timestamp, ip_address
-                FROM shortener_clickrecord
-                WHERE short_url_id = %s
-                ORDER BY timestamp DESC
-            """, [url_id])
-            clicks = cursor.fetchall()
+    for url_id, original_url, short_url, clicks_count in urls:
         url_data.append(URLData(
             original_url=original_url,
             short_url=short_url,
             clicks_count=clicks_count,
-            clicks=[{'timestamp': c[0], 'ip_address': c[1]} for c in clicks],
+            clicks=clicks_dict.get(url_id, [])
         ))
 
     return render(request, 'shortener/url_list.html', {'urls': url_data})
